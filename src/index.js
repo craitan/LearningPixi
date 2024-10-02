@@ -50,12 +50,18 @@ import {
   let moveRight = false;
   let jump = false;
   let isJumping = false;
+  let jumpSpeed = 0;
+  const gravity = 0.5;
+  const jumpPower = -10;
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft") {
       moveLeft = true;
     } else if (e.key === "ArrowRight") {
       moveRight = true;
+    } else if (e.key === " " && !isJumping) {
+      jumpSpeed = jumpPower;
+      isJumping = true;
     }
   });
 
@@ -64,17 +70,7 @@ import {
       moveLeft = false;
     } else if (e.key === "ArrowRight") {
       moveRight = false;
-    }
-  });
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key === " ") {
-      jump = true;
-    }
-  });
-
-  window.addEventListener("keyup", (e) => {
-    if (e.key === " ") {
+    } else if (e.key === " ") {
       jump = false;
     }
   });
@@ -89,10 +85,15 @@ import {
       superMario.x += 5;
     }
 
-    if (jump) {
-      superMario.y -= 20;
-    } else if (!jump && superMario.y < app.canvas.height - superMario.height) {
-      superMario.y += 20;
+    if (isJumping) {
+      superMario.y += jumpSpeed;
+      jumpSpeed += gravity;
+      
+      if (superMario.y >= app.canvas.height - superMario.height) {
+        superMario.y = app.canvas.height - superMario.height;
+        isJumping = false;
+        jumpSpeed = 0;
+      }
     }
   });
 
