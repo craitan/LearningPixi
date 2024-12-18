@@ -1,3 +1,5 @@
+import gsap from "gsap";
+
 import {
   Application,
   Graphics,
@@ -34,14 +36,15 @@ import { filter, map } from 'rxjs/operators';
   });
 
   //We add img of super Mario here
-  const texture = await Assets.load("/imgs/pngwing.com.png");
+  let currentPicture = "/imgs/mario_right.png";
+  const texture = await Assets.load(currentPicture);
 
   const superMario = Sprite.from(texture);
   Object.assign(superMario, {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 55,
     x: 100,
-    y: app.canvas.height - 60, // Here we put Mario at the bottom of the canvas - 60 is his height
+    y: app.canvas.height - 55, // Here we put Mario at the bottom of the canvas - 60 is his height
   });
 
   //   app.stage.addChild(rectangle);
@@ -77,6 +80,7 @@ import { filter, map } from 'rxjs/operators';
     } else if (key === ' ' && !isJumping) {
       jumpSpeed = jumpPower;
       isJumping = true;
+      
     }
   });
 
@@ -94,7 +98,7 @@ import { filter, map } from 'rxjs/operators';
     }
   });
 
-  app.ticker.add(() => {
+  app.ticker.add( async () => {
     if (moveLeft && superMario.x > 0) {
       // Here we are moving Mario to the left and he cant go out of the canvas
       superMario.x -= 3;
@@ -115,6 +119,9 @@ import { filter, map } from 'rxjs/operators';
         isJumping = false;
         jumpSpeed = 0;
       }
+    } else {
+      const texture = await Assets.load(currentPicture);
+      superMario.texture = texture;
     }
   });
 
