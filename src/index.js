@@ -6,6 +6,8 @@ import {
   Assets,
   Sprite,
 } from "pixi.js";
+import { fromEvent } from "rxjs";
+import { filter, map } from 'rxjs/operators';
 
 (async () => {
   const app = new Application(); // This is initializing the app
@@ -54,42 +56,61 @@ import {
   const gravity = 0.5;
   const jumpPower = -10;
 
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") {
+  const click$ = fromEvent(document, "click");
+
+  click$.subscribe((event) => {
+    console.log(`X: ${event.clientX}, Y: ${event.clientY}`);
+  });
+
+  const keydown$ = fromEvent(document, "keydown");
+  const keyup$ = fromEvent(document, "keyup");
+  keydown$
+  .pipe(
+    filter(event => event.key === 'ArrowLeft' || event.key === 'ArrowRight' || (event.key === ' ' && !isJumping)),
+    map(event => event.key)
+  )
+  .subscribe((key) => {
+    if (key === 'ArrowLeft') {
       moveLeft = true;
-    } else if (e.key === "ArrowRight") {
+    } else if (key === 'ArrowRight') {
       moveRight = true;
-    } else if (e.key === " " && !isJumping) {
+    } else if (key === ' ' && !isJumping) {
       jumpSpeed = jumpPower;
       isJumping = true;
     }
   });
 
-  window.addEventListener("keyup", (e) => {
-    if (e.key === "ArrowLeft") {
+  keyup$
+  .pipe(
+    filter(event => event.key === 'ArrowLeft' || event.key === 'ArrowRight'),
+    map(event => event.key)
+  ).subscribe((key) => {
+    if (key === 'ArrowLeft') {
       moveLeft = false;
-    } else if (e.key === "ArrowRight") {
+    } else if (key === 'ArrowRight') {
       moveRight = false;
-    } else if (e.key === " ") {
+    } else if (key === ' ') {
       jump = false;
     }
   });
 
   app.ticker.add(() => {
     if (moveLeft && superMario.x > 0) {
-      superMario.x -= 5;
+      // Here we are moving Mario to the left and he cant go out of the canvas
+      superMario.x -= 3;
     } else if (
       moveRight &&
-      superMario.x < app.canvas.width - superMario.width
+      superMario.x < app.canvas.width - superMario.width // Here we are moving Mario to the right and he cant go out of the canvas
     ) {
-      superMario.x += 5;
+      superMario.x += 3;
     }
 
     if (isJumping) {
       superMario.y += jumpSpeed;
       jumpSpeed += gravity;
-      
+
       if (superMario.y >= app.canvas.height - superMario.height) {
+        // Here we are making sure Mario is not going out of the top of the canvas
         superMario.y = app.canvas.height - superMario.height;
         isJumping = false;
         jumpSpeed = 0;
